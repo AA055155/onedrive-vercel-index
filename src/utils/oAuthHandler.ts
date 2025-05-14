@@ -13,6 +13,16 @@ export function obfuscateToken(token: string): string {
 }
 export function revealObfuscatedToken(obfuscated: string): string {
   // Decrypt SHA256 obfuscated token
+  //! 加密CLIENT_SECRET密钥后将其配置到.env的NEXT_PUBLIC_AZURE_CLIENT_SECRET
+  /*
+  ? 若NEXT_PUBLIC_AZURE_CLIENT_SECRET为明文，则会报错AADSTS70002: The provided request must include a 'client_secret' input parameter.
+  ? 因为本方法返回值为空字符串
+
+  */
+  /*
+  let en_obfuscated = obfuscateToken(obfuscated)
+  console.log('en_obfuscated', en_obfuscated);
+  */
   const decrypted = CryptoJS.AES.decrypt(obfuscated, AES_SECRET_KEY)
   return decrypted.toString(CryptoJS.enc.Utf8)
 }
@@ -57,6 +67,7 @@ export async function requestTokenWithAuthCode(
 > {
   const { clientId, redirectUri, authApi } = apiConfig
   const clientSecret = revealObfuscatedToken(apiConfig.obfuscatedClientSecret)
+  console.log('clientSecret', clientSecret);
 
   // Construct URL parameters for OAuth2
   const params = new URLSearchParams()
@@ -65,6 +76,7 @@ export async function requestTokenWithAuthCode(
   params.append('client_secret', clientSecret)
   params.append('code', code)
   params.append('grant_type', 'authorization_code')
+  // console.log('params', params);
 
   // Request access token
   return axios
