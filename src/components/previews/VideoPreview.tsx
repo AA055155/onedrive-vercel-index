@@ -9,7 +9,7 @@ import toast from 'react-hot-toast'
 import dynamic from 'next/dynamic';
 // import Plyr from 'plyr-react'
 const Plyr = dynamic(
-  () => import('plyr-react').then((mod) => mod.Plyr),
+  () => import('plyr-react').then((plyr) => plyr),
   {
     ssr: false,  // 禁用 SSR
     loading: () => <div>Loading player...</div>,  // 加载占位符
