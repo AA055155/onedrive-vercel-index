@@ -6,7 +6,15 @@ import { useTranslation } from 'next-i18next'
 
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import Plyr from 'plyr-react'
+import dynamic from 'next/dynamic';
+// import Plyr from 'plyr-react'
+const Plyr = dynamic(
+  () => import('plyr-react').then((mod) => mod.Plyr),
+  {
+    ssr: false,  // 禁用 SSR
+    loading: () => <div>Loading player...</div>,  // 加载占位符
+  }
+);
 import { useAsync } from 'react-async-hook'
 import { useClipboard } from 'use-clipboard-copy'
 
