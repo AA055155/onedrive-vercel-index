@@ -148,6 +148,115 @@ Open-source is hard! If you happen to like this project and want me to keep goin
 </div>
 
 
+## 上手文档：[onedrive-vercel-index](https://ovi.swo.moe/zh)
+
+### 使用Next.js基于Vercel部署：https://wwww.lvmoo.com/onedrive-index/
+
+## 注册应用【Microsoft Azure】:https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade
+
+## OneDrive：https://onedrive.live.com/?id=2A8711E51C5680A1%21s98579b0d9410456081942e77acf9e0ff&cid=2A8711E51C5680A1&sb=name&sd=1
 
 
-https://ovi.swo.moe/zh/docs/getting-started
+
+## onedrive-vercel-index只能分享文件吗？不能上传和下载文件吗？
+
+onedrive-vercel-index 的核心功能定位为 ‌**OneDrive 文件的索引展示与共享**‌，其原生设计不支持直接上传文件 12。关于上传和下载能力的详细分析如下：
+
+------
+
+### ‌**功能边界解析**‌
+
+| 功能模块     | 支持情况               | 说明                                                         |
+| ------------ | ---------------------- | ------------------------------------------------------------ |
+| ‌**文件展示**‌ | ✅ 完整支持             | 支持目录结构展示、多格式文件预览（文档/图片/音视频）12       |
+| ‌**文件分享**‌ | ✅ 通过生成公开链接实现 | 支持密码保护和过期时间设置（需配合 OneDrive 原生功能）26     |
+| ‌**文件下载**‌ | ⚠️ 条件性支持           | 默认开启下载功能，但受限于 OneDrive 权限策略（如「仅查看」模式禁用下载）56 |
+| ‌**文件上传**‌ | ❌ 原生不支持           | 需通过 OneDrive 原生客户端或 API 自行实现 34                 |
+
+------
+
+### ‌**下载功能限制与解决方案**‌
+
+1. ‌**权限配置问题**‌
+   - 若分享链接设置为「仅查看」模式，前端会隐藏下载按钮（需在 OneDrive 后台调整权限为「可编辑」）6；
+   - 直接通过 API 访问文件 URL 仍可绕过前端限制下载（需 `Files.ReadWrite.All` 权限）4。
+2. ‌**网络环境问题**‌
+   部分地区访问 OneDrive 网页端不稳定，建议改用客户端同步文件或通过 Vercel 代理加速访问 7。
+
+------
+
+### ‌**上传功能扩展方案**‌
+
+若需实现上传能力，需通过以下方式扩展：
+
+1. ‌**调用 OneDrive API**‌
+
+   - 配置应用权限 `Files.ReadWrite.All` 并获取 `client_secret` 4；
+   - 使用 Python/Node.js 等语言开发自定义上传接口 4。
+
+   ```
+   pythonCopy Code# 示例：Python 上传文件到 OneDrive
+   import requests
+   
+   def upload_to_onedrive(file_path, access_token):
+       headers = {'Authorization': f'Bearer {access_token}'}
+       with open(file_path, 'rb') as f:
+           response = requests.put(
+               'https://graph.microsoft.com/v1.0/me/drive/root:/{filename}:/content',
+               headers=headers,
+               data=f
+           )
+       return response.status_code
+   ```
+
+2. ‌**集成第三方工具**‌
+   使用 MultCloud 等工具跨平台管理文件，间接实现上传功能 5。
+
+------
+
+### ‌**架构局限性总结**‌
+
+该项目作为轻量级索引工具，核心价值在于 ‌**低成本部署与可视化展示**‌，文件管理功能需依赖 OneDrive 原生能力或二次开发 12。若需完整上传/下载生态，建议结合 API 开发自定义模块或切换至全功能网盘系统 35。
+
+
+
+## next dev和start的区别
+
+本人github
+在Next.js项目的**package.json**文件中，**dev**和**start**脚本的主要区别在于它们各自的用途和运行模式：
+
+**dev 脚本**
+
+```
+"dev": "next dev"
+```
+
+- **用途**：这个命令用于启动Next.js的开发服务器。它允许开发者在开发过程中实时预览改动，因为它提供了热模块替换（Hot Module Replacement，HMR）功能，即在你编辑代码时无需手动刷新浏览器就能看到更新。
+- **特点**：
+  - 启用了快速刷新。
+  - 提供了详细的错误报告和反馈。
+  - 不会生成可用于生产环境的优化后代码。
+  - 默认情况下，不会进行代码拆分和静态优化。
+- **场景**：开发阶段，用于快速迭代和调试。
+
+**start 脚本**
+
+```
+"start": "next start"
+```
+
+- 用途：这个命令用于启动一个为生产环境优化过的Next.js服务器。在执行这个命令之前，你需要先使用next build命令对应用进行构建，这个过程会优化应用性能，生成静态页面和服务器端渲染的代码。
+- 特点：
+  - 需要预先运行`next build`来构建项目。
+  - 服务的是优化后的生产版本代码。
+  - 支持特性如自动静态优化、服务器端渲染（SSR）、API路由等。
+  - 不支持热模块替换，任何改动都需要重新构建。
+- 场景：生产环境，用于部署应用。
+
+**总结**
+简而言之，**dev**命令用于开发环境，提供了开发过程中所需的实时预览和调试功能。而**start**命令则用于生产环境，运行的是经过构建和优化的应用版本，以确保最佳性能。正确使用这两个命令，可以在开发和生产阶段分别享有最佳的开发体验和应用性能。
+————————————————
+
+                            版权声明：本文为博主原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接和本声明。
+
+原文链接：https://blog.csdn.net/m0_57236802/article/details/137073172

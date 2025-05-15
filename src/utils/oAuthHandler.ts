@@ -17,7 +17,6 @@ export function revealObfuscatedToken(obfuscated: string): string {
   /*
   ? 若NEXT_PUBLIC_AZURE_CLIENT_SECRET为明文，则会报错AADSTS70002: The provided request must include a 'client_secret' input parameter.
   ? 因为本方法返回值为空字符串
-
   */
   /*
   let en_obfuscated = obfuscateToken(obfuscated)
